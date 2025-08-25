@@ -18,6 +18,7 @@ class RestaurantApp extends Component {
     menuCategories: [],
     activeCategory: '',
     apiStatus: apiStatusConstants.initial,
+    restaurantName: '',
   }
 
   componentDidMount() {
@@ -38,10 +39,12 @@ class RestaurantApp extends Component {
       console.log(data)
       const menuCategories = data[0].table_menu_list
       const initialActiveCategory = menuCategories[0].menu_category
+
       this.setState({
         menuCategories,
         activeCategory: initialActiveCategory,
         apiStatus: apiStatusConstants.success,
+        restaurantName: data[0].restaurant_name,
       })
     } else {
       this.setState({apiStatus: apiStatusConstants.failure})
@@ -87,7 +90,18 @@ class RestaurantApp extends Component {
 
   handleDecrement = dishId => {
     this.setState(prevState => {
-      const newCartItems = {...prevState.cartItems}
+      const {activeCategory, cartItems} = prevState
+      const newCartItems = {...cartItems}
+
+      // Prevent decrement if active category is "Salads and Soup"
+      // and count is already 0
+      if (
+        activeCategory === 'Salads and Soup' &&
+        (!newCartItems[dishId] || newCartItems[dishId] === 0)
+      ) {
+        return null
+      }
+
       if (newCartItems[dishId] && newCartItems[dishId] > 0) {
         newCartItems[dishId] -= 1
         return {
@@ -190,11 +204,17 @@ class RestaurantApp extends Component {
   )
 
   renderMenuView = () => {
-    const {apiStatus} = this.state
+    const {apiStatus, cartItems, restaurantName} = this.state
+    const cartCount = Object.values(cartItems).reduce(
+      (acc, curr) => acc + curr,
+      0,
+    )
+
     switch (apiStatus) {
       case apiStatusConstants.success:
         return (
           <>
+            <Header cartCount={cartCount} restaurantName={restaurantName} />
             {this.renderMenuCategoryList()}
             {this.renderMenuItems()}
           </>
@@ -209,18 +229,7 @@ class RestaurantApp extends Component {
   }
 
   render() {
-    const {cartItems} = this.state
-    const cartCount = Object.values(cartItems).reduce(
-      (acc, curr) => acc + curr,
-      0,
-    )
-
-    return (
-      <div className="restaurant-container">
-        <Header cartCount={cartCount} />
-        {this.renderMenuView()}
-      </div>
-    )
+    return <div className="restaurant-container">{this.renderMenuView()}</div>
   }
 }
 
