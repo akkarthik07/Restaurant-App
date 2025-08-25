@@ -119,7 +119,7 @@ class RestaurantApp extends Component {
             <div key={dish.dish_id} className="menu-item-card">
               <div className="item-details">
                 <div className="dish-name-wrapper">
-                  <div className={`dish-indicator ${indicatorClassName}`}></div>
+                  <div className={`dish-indicator ${indicatorClassName}`} />
                   <h2 className="item-name">{dish.dish_name}</h2>
                 </div>
                 <p className="item-price">
